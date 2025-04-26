@@ -1,6 +1,7 @@
-const Database = require('better-sqlite3');
-const db = new sqlite3.Database("appointments.db");
+const Database = require('better-sqlite3'); // Use better-sqlite3
+const db = new Database('appointments.db'); // Create or connect to DB
 
+// Create the appointments table if it doesn't exist
 db.prepare(`
   CREATE TABLE IF NOT EXISTS appointments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,5 +14,4 @@ db.prepare(`
   )
 `).run();
 
-
-module.exports = db;
+module.exports = db; // Export the database instance
