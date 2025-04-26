@@ -1,35 +1,19 @@
-
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const bodyParser = require("body-parser");
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+const db = require("./database");
 
 app.post("/api/book", (req, res) => {
-  const formData = req.body;
-  const filePath = path.join(__dirname, "appointments.json");
+  const { name, email, phone, date, time, message } = req.body;
 
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-  }
+  const query = `
+    INSERT INTO appointments (name, email, phone, date, time, message)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
 
-  let appointments = JSON.parse(fs.readFileSync(filePath));
-  appointments.push(formData);
-  fs.writeFileSync(filePath, JSON.stringify(appointments, null, 2));
-
-  res.json({ message: "Appointment saved!" });
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  db.run(query, [name, email, phone, date, time, message], function (err) {
+    if (err) {
+      console.error(err.message);
+      res.status(500).json({ message: "Error saving appointment." });
+    } else {
+      res.json({ message: "Appointment saved!", id: this.lastID });
+    }
+  });
 });
